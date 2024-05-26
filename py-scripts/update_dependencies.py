@@ -54,7 +54,9 @@ def main():
     print("Packages Installed Success: {}\n".format(packages_installed))
     if not packages_failed:
         return
-    print("Packages Failed (Some scripts may not need these packages): {}".format(packages_failed))
+    else:
+        print("Packages Failed (Some scripts may not need these packages): {}".format(packages_failed))
+        exit(1)
 
 
 if __name__ == "__main__":
