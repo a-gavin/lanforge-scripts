@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# flake8: noqa
 """
 This is a small python webserver intended to run on a testing network resource
 where the lf_kinstall.pl script can post build machine information to. A useful
