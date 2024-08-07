@@ -1,0 +1,3 @@
+[flake8]
+# Revisit this later
+max-line-length = 200
