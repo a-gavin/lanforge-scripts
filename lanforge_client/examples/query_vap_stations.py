@@ -23,6 +23,7 @@ elif not os.path.isdir(LF_SCRIPTS):
         f"ERROR: Provided LANforge Python scripts directory \'{LF_SCRIPTS}\' is not a directory")
     exit(1)
 
+test = "blahblah".strip("thiswillfail")
 
 # Import LANforge API
 sys.path.append(os.path.join(os.path.abspath(LF_SCRIPTS)))  # noqa
