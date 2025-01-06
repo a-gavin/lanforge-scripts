@@ -574,12 +574,10 @@ def parse_args():
                         default="localhost")
     parser.add_argument("--csv_file",
                         help="name of the csv output file",
-                        required=True,
                         type=str)
     parser.add_argument("--cx_list", "--cx_names",
                         dest="cx_names_str",
                         help="comma separated list of voip connection names, or 'ALL'",
-                        required=True,
                         type=str)
     parser.add_argument("--debug",
                         help='Enable debugging',
@@ -621,12 +619,29 @@ def parse_args():
                              "Order and length must match the order of connections passed in the "
                              "\'--cx_list\' argument.",
                         nargs="*")
+    parser.add_argument('--help_summary', action="store_true", help='Show summary of what this script does')    
 
     return parser.parse_args()
 
 
 def main():
+    help_summary='''\
+This script will start a named set of voip connections and report their data to a csv file
+'''
     args = parse_args()
+
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
+
+    if not args.csv_file:
+        print("--csv_file required")
+        exit(1)
+
+    if not args.cx_names_str:
+        print("--cx_list/--cx_names required")
+        exit(1)
+
     lfapi_session = LFSession(lfclient_url=args.host,
                               debug=args.debug)
 

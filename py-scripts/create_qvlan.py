@@ -114,6 +114,7 @@ class CreateQVlan(Realm):
                     qvlan_profile.gateway = ipv4_gateways[ix]
 
     def build(self):
+        """Create LANforge port(s) as specified."""
         logger.info("Creating QVLAN port(s)")
         for qvlan_profile in self.qvlan_profiles:
             ret = qvlan_profile.create(debug=self.debug, sleep_time=0)
@@ -127,6 +128,7 @@ class CreateQVlan(Realm):
 
 
 def parse_args():
+    """Parse CLI arguments."""
     parser = LFCliBase.create_bare_argparse(
         prog='create_qvlan.py',
         formatter_class=argparse.RawTextHelpFormatter,
@@ -179,8 +181,7 @@ LICENSE:    Free to distribute and modify. LANforge systems must be licensed.
     parser.add_argument('--parent', '--parent_port', '--qvlan_parent',
                         dest='parent_port',
                         help='Parent port used by created QVLAN port(s)',
-                        default=None,
-                        required=True)
+                        default=None)
     parser.add_argument('--qvlan_ids',
                         dest='qvlan_ids',
                         nargs='+',
@@ -188,8 +189,7 @@ LICENSE:    Free to distribute and modify. LANforge systems must be licensed.
                              'One QVLAN port is created per ID. For static IP configuration, '
                              'the number of IDs specified in this argument must match the number '
                              'of static IP addresses specified in the \'--ipv4_addresses\'.',
-                        default=None,
-                        required=True)
+                        default=None)
 
     # Optional IPv4 configuration
     #
@@ -233,6 +233,15 @@ LICENSE:    Free to distribute and modify. LANforge systems must be licensed.
 
 
 def validate_args(args):
+    """Validate CLI arguments."""
+    if args.parent_port is None:
+        logger.critical("--parent or --parent_port or --macvlan_parent argument required")
+        exit(0)
+
+    if args.qvlan_ids is None:
+        logger.critical("--qvlan_ids argument required")
+        exit(0)
+
     # User either specifies DHCPv4, static IPv4 configuration, or no IPv4 configuration
     if args.ipv4_addresses:
         num_addresses = len(args.ipv4_addresses)
@@ -267,6 +276,7 @@ def validate_args(args):
 
 
 def main():
+    """Create LANforge 802.1Q VLAN port(s) using specified options."""
     args = parse_args()
 
     help_summary = "This script will create and configure a one or more 802.1Q VLAN ports " \

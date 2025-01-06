@@ -172,14 +172,30 @@ Example:
                         help="IP Port the LANforge GUI is listening on (8080 is default)")
     parser.add_argument("--lanforge_db", "--db", "--lanforge_scenario", type=str,
                         help="Name of test scenario database (see Status Tab)")
-    parser.add_argument("-c", "--cv_scenario", type=str, required=True,
+    parser.add_argument("-c", "--cv_scenario", type=str,
                         help="Name of Chamber View test scenario (see CV Manage Scenarios)")
-    parser.add_argument("-n", "--cv_test", type=str, required=True,
+    parser.add_argument("-n", "--cv_test", type=str,
                         help="Chamber View test")
-    parser.add_argument("-s", "--test_profile", "--test_settings", type=str, required=True,
+    parser.add_argument("-s", "--test_profile", "--test_settings", type=str,
                         help="Name of the saved CV test settings")
+    parser.add_argument('--help_summary', action="store_true",
+                        help='Show summary of what this script does')
+
 
     args = parser.parse_args()
+
+    help_summary='''\
+LANforge Reporting Script:  Load a scenario and run a RvR report.
+'''
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
+
+
+    if not args.cv_scenario or not args.cv_test or not args.test_profile:
+        print("Warning: --cv_scenario , --cv_test and --test_settings required ")
+        exit(1)
+
     if args.lfmgr is not None:
         lfjson_host = args.lfmgr
     if args.port is not None:

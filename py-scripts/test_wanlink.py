@@ -80,6 +80,14 @@ def main():
         # todo: jitter A and B
 
     parseargs = parser.parse_args()
+    help_summary='''\
+This script will create and modify WAN Links from the command line.
+'''
+
+    if parseargs.help_summary:
+        print(help_summary)
+        exit(0)
+
     args = {
         "host": parseargs.mgr,
         "port": parseargs.mgr_port,

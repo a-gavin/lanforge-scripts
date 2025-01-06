@@ -1,5 +1,6 @@
+#!/usr/bin/env python3
 # flake8: noqa
-"""
+'''
 Name: sta_connect_bssid_mac.py
 Purpose:
     This script can create stations and can be used to set multiple BSSID, MAC to each individual station.
@@ -15,7 +16,7 @@ Example:
     --sta_name "sta001,sta002" #station names
     --mac 04:f0:21:89:3e:ea,04:f0:21:89:4e:ea #mac
     --bss_trans #flag to set BSS transition on all stations
-"""
+'''
 import sys
 import os
 import importlib
@@ -114,6 +115,15 @@ def main():
                         help="To enable BSS transition.(by default: False)")
 
     args = parser.parse_args()
+
+    help_summary='''\
+    Work in progress.
+    The script can create stations and can be used to set multiple BSSID, MAC to each individual station.
+'''
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
+
     obj = client_connect(lfclient_host=args.mgr, lfclient_port=args.mgr_port, radio=args.radio, sta_name=args.sta_name,
                          ssid=args.ssid, security=args.security, paswd=args.passwd, bssid=args.bssid,
                          mac=args.mac, bss_trans=args.bss_trans

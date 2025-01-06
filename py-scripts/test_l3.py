@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# flake8: noqa
+
 """
 NAME: test_l3.py
 
@@ -42,7 +42,7 @@ Example running traffic with two radios
 
         # Interopt example Creating stations
             Interopt testing creating stations
-            ./test_l3.py --lfmgr 192.168.0.104\
+            ./test_l3.py --lfmgr 192.168.50.104\
              --test_duration 60s\
             --polling_interval 5s\
             --upstream_port 1.1.eth2\
@@ -115,10 +115,14 @@ Example running traffic with two radios
 
          # Have script use wifi_settings enable flages  ::  wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)
              ./test_l3.py --lfmgr 192.168.200.83 --test_duration 20s --polling_interval 5s --upstream_port 1.1.eth1
-             --radio 'radio==1.1.wiphy0,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
-             --radio 'radio==1.1.wiphy1,stations==1,ssid==Netgear5g,ssid_pw==lanforge,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
-             --radio 'radio==1.1.wiphy2,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
-             --endp_type lf_udp --rates_are_totals --side_a_min_bps=20000 --side_b_min_bps=300000000 --test_rig ID_003 --test_tag 'l3_longevity' --dut_model_num GT-AXE11000 --dut_sw_version 3.0.0.4.386_44266
+             --radio 'radio==1.1.wiphy0,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
+             --radio 'radio==1.1.wiphy1,stations==1,ssid==Netgear5g,ssid_pw==lanforge,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
+             --radio 'radio==1.1.wiphy2,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
+             --endp_type lf_udp --rates_are_totals --side_a_min_bps=20000 --side_b_min_bps=300000000\
+             --test_rig ID_003 --test_tag 'l3_longevity' --dut_model_num GT-AXE11000 --dut_sw_version 3.0.0.4.386_44266
              --dut_hw_version 1.0 --dut_serial_num 12345678 --log_level debug
 
          # Setting wifi_settings per radio
@@ -128,7 +132,8 @@ Example running traffic with two radios
             --test_duration 15s
             --polling_interval 5s
             --upstream_port eth2
-            --radio "radio==wiphy1 stations==4 ssid==asus11ax-5 ssid_pw==hello123 security==wpa2  mode==0 wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down&&ht160_enable) "
+            --radio "radio==wiphy1,stations==4,ssid==asus11ax-5,ssid_pw==hello123,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down&&ht160_enable)"
             --endp_type lf_udp
             --rates_are_totals
             --side_a_min_bps=20000
@@ -137,22 +142,25 @@ Example running traffic with two radios
             --test_tag 'test_l3'
 
          # Example : LAN-1927  WPA2-TLS-Configuration
-            ./test_l3.py
-             --lfmgr 192.168.0.103
-             --test_duration 20s
-             --polling_interval 5s
-             --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa2,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,wifi_extra==key_mgmt&&WPA-EAP!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Disabled'
-             --endp_type lf_udp
-             --rates_are_totals
-             --side_a_min_bps=256000
-             --side_b_min_bps=300000000
-             --test_rig ID_003
-             --test_tag 'test_l3'
-             --dut_model_num GT-AXE11000
-             --dut_sw_version 3.0.0.4.386_44266
-             --dut_hw_version 1.0
-             --dut_serial_num 12345678
+            ./test_l3.py\
+             --lfmgr 192.168.50.104\
+             --test_duration 20s\
+             --polling_interval 5s\
+             --upstream_port 1.1.eth2\
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==lf_ax88u_5g,security==wpa2\
+,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,\
+wifi_extra==key_mgmt&&WPA-EAP!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!\
+ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Disabled'\
+             --endp_type lf_udp\
+             --rates_are_totals\
+             --side_a_min_bps=256000\
+             --side_b_min_bps=300000000\
+             --test_rig ID_003\
+             --test_tag 'test_l3'\
+             --dut_model_num GT-AXE11000\
+             --dut_sw_version 3.0.0.4.386_44266\
+             --dut_hw_version 1.0\
+             --dut_serial_num 12345678\
              --log_level debug
 
         # Example : LAN-1927  WPA2-TTLS-Configuration
@@ -161,7 +169,8 @@ Example running traffic with two radios
              --test_duration 20s
              --polling_interval 5s
              --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa2,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Disabled'
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa2,\
+wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Disabled'
              --endp_type lf_udp
              --rates_are_totals
              --side_a_min_bps=256000
@@ -181,7 +190,8 @@ Example running traffic with two radios
              --test_duration 20s
              --polling_interval 5s
              --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Required'
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,\
+wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Required'
              --endp_type lf_ud
              --rates_are_totals
              --side_a_min_bps=256000
@@ -200,7 +210,8 @@ Example running traffic with two radios
              --test_duration 20s
              --polling_interval 5s
              --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Required'
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,\
+wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Required'
              --endp_type lf_udp
              --rates_are_totals
              --side_a_min_bps=256000
@@ -520,13 +531,12 @@ import os
 import random
 import sys
 import time
-from pprint import pprint
 from pprint import pformat
 import logging
 import platform
 import itertools
 import pandas as pd
-import traceback
+# import traceback # TODO incorporate traceback if using try except
 import json
 
 if sys.version_info[0] != 3:
@@ -1371,7 +1381,7 @@ class L3VariableTime(Realm):
 
         eid = port_eid
         eid = self.name_to_eid(port_eid)
-        if self.dowebgui != True:
+        if not self.dowebgui:
             logger.info("endp-stats-for-port, port-eid: {}".format(port_eid))
             logger.debug(
                 "eid: {eid}".format(eid=eid))
@@ -1383,7 +1393,7 @@ class L3VariableTime(Realm):
 
         for endp in endps:
             # pprint(endp)
-            if self.dowebgui != True:
+            if not self.dowebgui:
                 logging.info(pformat(endp))
             eid_endp = endp["eid"].split(".")
             logger.debug(
@@ -1394,14 +1404,14 @@ class L3VariableTime(Realm):
             # Note: the endp eid is shelf.resource.port.endp-id, the eid can be treated somewhat as
             # child class of port-eid , and look up the port the eid is using.
             if eid[0] == eid_endp[0] and eid[1] == eid_endp[1] and eid[2] == eid_endp[2]:
-                if((endp['delay'] is str and not endp['delay'].isnumeric()) or endp['delay'] is None):
+                if ((endp['delay'] is str and not endp['delay'].isnumeric()) or endp['delay'] is None):
                     logging.debug(
                         'Expected integer response for delay, received non-numeric string instead. Replacing with 0')
                     lat += 0
                 else:
                     lat += int(endp['delay'])
 
-                if((endp['jitter'] is str and not endp['jitter'].isnumeric()) or endp['jitter'] is None):
+                if ((endp['jitter'] is str and not endp['jitter'].isnumeric()) or endp['jitter'] is None):
                     logging.debug(
                         'Expected integer response for jitter, received non-numeric string instead. Replacing with 0')
                     jit += 0
@@ -1464,9 +1474,9 @@ class L3VariableTime(Realm):
                             and not endp['rx drop %'].isnumeric()) or endp['rx drop %'] is None:
                         logging.debug(
                             'Expected integer response for rx drop %, received non-numeric string instead. Replacing with 0')
-                        dl_tx_drop_percent = 0
+                        dl_rx_drop_percent = 0
                     else:
-                        dl_tx_drop_percent = round(endp["rx drop %"], 2)
+                        dl_rx_drop_percent = round(endp["rx drop %"], 2)
 
                 # -B upload side
                 else:
@@ -2008,7 +2018,7 @@ class L3VariableTime(Realm):
                         log_msg = "main loop, total-dl: {total_dl_bps} total-ul: {total_ul_bps} total-dl-ll: {total_dl_ll_bps}".format(
                             total_dl_bps=total_dl_bps, total_ul_bps=total_ul_bps, total_dl_ll_bps=total_dl_ll_bps)
                         # Added logic creating a csv file for webGUI to get runtime data
-                        if self.dowebgui == True:
+                        if self.dowebgui:
                             time_difference = abs(end_time - datetime.datetime.now())
                             total_hours = time_difference.total_seconds() / 3600
                             remaining_minutes = (total_hours % 1) * 60
@@ -2034,7 +2044,7 @@ class L3VariableTime(Realm):
                                     logging.warning('Test is stopped by the user')
                                     self.overall[len(self.overall) - 1]["end_time"] = self.get_time_stamp_local()
                                     break
-                        if self.dowebgui != True:
+                        if not self.dowebgui:
                             logger.debug(log_msg)
 
                         # AP OUTPUT
@@ -2065,14 +2075,14 @@ class L3VariableTime(Realm):
                                         "query-port: %s: incomplete response:" % url)
                                     logger.info(pformat(response))
                                 else:
-                                    if self.dowebgui != True:
+                                    if not self.dowebgui:
                                         # print("response".format(response))
                                         logger.info(pformat(response))
                                     port_data = response['interface']
                                     logger.info(
                                         "From LANforge: port_data, response['insterface']:{}".format(port_data))
                                     mac = port_data['mac']
-                                    if self.dowebgui != True:
+                                    if not self.dowebgui:
                                         logger.info(
                                             "From LANforge: port_data, response['insterface']:{}".format(port_data))
                                     mac = port_data['mac']
@@ -2090,12 +2100,14 @@ class L3VariableTime(Realm):
                                         port_data["port"], endps)
 
                                 if tx_dl_mac_found:
-                                    if self.dowebgui != True:
+                                    if not self.dowebgui:
                                         logger.info("mac {mac} ap_row_tx_dl {ap_row_tx_dl}".format(
                                             mac=mac, ap_row_tx_dl=ap_row_tx_dl))
                                     # Find latency, jitter for connections
                                     # using this port.
-                                    latency, jitter, total_dl_rate, total_dl_rate_ll, total_dl_pkts_ll, dl_rx_drop_percent, total_ul_rate, total_ul_rate_ll, total_ul_pkts_ll, ul_rx_drop_percent = self.get_endp_stats_for_port(
+                                    (latency, jitter, total_dl_rate, total_dl_rate_ll, total_dl_pkts_ll,
+                                     dl_rx_drop_percent, total_ul_rate, total_ul_rate_ll,
+                                     total_ul_pkts_ll, ul_rx_drop_percent) = self.get_endp_stats_for_port(
                                         port_data["port"], endps)
 
                                     ap_row_tx_dl.append(ap_row_chanim)
@@ -2126,7 +2138,8 @@ class L3VariableTime(Realm):
                                 if rx_ul_mac_found:
                                     # Find latency, jitter for connections
                                     # using this port.
-                                    # latency, jitter, total_dl_rate, total_dl_rate_ll, total_dl_pkts_ll, dl_rx_drop_percent, total_ul_rate, total_ul_rate_ll, total_ul_pkts_ll, ul_tx_drop_percent = self.get_endp_stats_for_port(
+                                    # latency, jitter, total_dl_rate, total_dl_rate_ll, total_dl_pkts_ll, dl_rx_drop_percent, total_ul_rate,
+                                    # total_ul_rate_ll, total_ul_pkts_ll, ul_tx_drop_percent = self.get_endp_stats_for_port(
                                     #    port_data["port"], endps)
                                     self.write_ul_port_csv(
                                         len(temp_stations_list),
@@ -2146,9 +2159,9 @@ class L3VariableTime(Realm):
                                         total_dl_rate,
                                         total_dl_rate_ll,
                                         total_dl_pkts_ll,
-                                        dl_tx_drop_percent,
+                                        dl_rx_drop_percent,
                                         ap_row_rx_ul)  # ap_ul_row added
-                                if self.dowebgui != True:
+                                if not self.dowebgui:
                                     logger.info("ap_row_rx_ul {ap_row_rx_ul}".format(
                                         ap_row_rx_ul=ap_row_rx_ul))
 
@@ -2173,7 +2186,9 @@ class L3VariableTime(Realm):
                                     logger.debug(pformat(response))
                                 else:
                                     port_data = response['interface']
-                                    latency, jitter, total_dl_rate, total_dl_rate_ll, total_dl_pkts_ll, dl_rx_drop_percent, total_ul_rate, total_ul_rate_ll, total_ul_pkts_ll, ul_rx_drop_percent = self.get_endp_stats_for_port(
+                                    (latency, jitter, total_dl_rate, total_dl_rate_ll,
+                                     total_dl_pkts_ll, dl_rx_drop_percent, total_ul_rate,
+                                     total_ul_rate_ll, total_ul_pkts_ll, ul_rx_drop_percent) = self.get_endp_stats_for_port(
                                         port_data["port"], endps)
                                     self.write_dl_port_csv(
                                         len(temp_stations_list),
@@ -2242,7 +2257,8 @@ class L3VariableTime(Realm):
                     # FutureWarning: Indexing with multiple keys need to make single [] to double [[]]
                     # https://stackoverflow.com/questions/60999753/pandas-future-warning-indexing-with-multiple-keys
                     all_dl_ports_stations_sum_df = all_dl_ports_stations_df.groupby(['Time epoch'])[['Rx-Bps', 'Tx-Bps', 'Rx-Latency', 'Rx-Jitter',
-                                                                                                    'Ul-Rx-Goodput-bps', 'Ul-Rx-Rate-ll', 'Ul-Rx-Pkts-ll', 'Dl-Rx-Goodput-bps', 'Dl-Rx-Rate-ll', 'Dl-Rx-Pkts-ll']].sum()
+                                                                                                     'Ul-Rx-Goodput-bps', 'Ul-Rx-Rate-ll', 'Ul-Rx-Pkts-ll',
+                                                                                                     'Dl-Rx-Goodput-bps', 'Dl-Rx-Rate-ll', 'Dl-Rx-Pkts-ll']].sum()
                     all_dl_ports_stations_sum_file_name = self.outfile[:-4]
                     all_dl_port_stations_sum_file_name = all_dl_ports_stations_sum_file_name + \
                         "-dl-all-eids-sum-per-interval.csv"
@@ -2313,7 +2329,8 @@ class L3VariableTime(Realm):
                         # FutureWarning: Indexing with multiple keys need to make single [] to double [[]]
                         # https://stackoverflow.com/questions/60999753/pandas-future-warning-indexing-with-multiple-keys
                         all_ul_ports_stations_sum_df = all_dl_ports_stations_df.groupby(['Time epoch'])[['Rx-Bps', 'Tx-Bps', 'Rx-Latency', 'Rx-Jitter',
-                                                                                                        'Ul-Rx-Goodput-bps', 'Ul-Rx-Rate-ll', 'Ul-Rx-Pkts-ll', 'Dl-Rx-Goodput-bps', 'Dl-Rx-Rate-ll', 'Dl-Rx-Pkts-ll']].sum()
+                                                                                                         'Ul-Rx-Goodput-bps', 'Ul-Rx-Rate-ll', 'Ul-Rx-Pkts-ll',
+                                                                                                         'Dl-Rx-Goodput-bps', 'Dl-Rx-Rate-ll', 'Dl-Rx-Pkts-ll']].sum()
                         all_ul_ports_stations_sum_file_name = self.outfile[:-4]
                         all_ul_port_stations_sum_file_name = all_ul_ports_stations_sum_file_name + \
                             "-ul-all-eids-sum-per-interval.csv"
@@ -2656,7 +2673,7 @@ class L3VariableTime(Realm):
         # gather port data
         # TODO
         self.port_data = self.json_get('port/all?fields=alias,port,mac,channel,ssid,mode,bps+rx,rx-rate,bps+tx,tx-rate')
-        #self.port_data = self.json_get('port/all')
+        # self.port_data = self.json_get('port/all')
         self.port_data.pop("handler")
         self.port_data.pop("uri")
         self.port_data.pop("warnings")
@@ -2667,7 +2684,7 @@ class L3VariableTime(Realm):
         self.resource_data.pop("handler")
         self.resource_data.pop("uri")
         # self.resource_data.pop("warnings")
-        if self.dowebgui != True:
+        if not self.dowebgui:
             logger.info("self.resource_data type: {dtype}".format(dtype=type(self.port_data)))
         # logger.info("self.resource_data : {data}".format(data=self.port_data))
 
@@ -5747,10 +5764,14 @@ Example running traffic with two radios
              --test_duration 60s\
             --polling_interval 5s\
             --upstream_port 1.1.eth2\
-            --radio 'radio==wiphy4,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
-            --radio 'radio==wiphy5,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
-            --radio 'radio==wiphy6,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
-            --radio 'radio==wiphy7,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy4,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy5,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy6,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy7,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
             --endp_type lf_udp,lf_tcp,mc_udp\
             --rates_are_totals\
             --side_a_min_bps=2000000\
@@ -5772,10 +5793,14 @@ Example running traffic with two radios
             --test_duration 30s\
             --polling_interval 5s\
             --upstream_port 1.1.eth2\
-            --radio 'radio==wiphy4,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
-            --radio 'radio==wiphy5,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
-            --radio 'radio==wiphy6,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
-            --radio 'radio==wiphy7,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy4,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy5,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy6,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
+            --radio 'radio==wiphy7,stations==1,ssid==axe11000_5g,ssid_pw==lf_axe11000_5g,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down'\
             --endp_type lf_udp,lf_tcp,mc_udp\
             --side_a_min_bps=1000000\
             --side_b_min_bps=0\
@@ -5845,10 +5870,14 @@ Example running traffic with two radios
 
          # Have script use wifi_settings enable flages  ::  wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)
              ./test_l3.py --lfmgr 192.168.200.83 --test_duration 20s --polling_interval 5s --upstream_port 1.1.eth1
-             --radio 'radio==1.1.wiphy0,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
-             --radio 'radio==1.1.wiphy1,stations==1,ssid==Netgear5g,ssid_pw==lanforge,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
-             --radio 'radio==1.1.wiphy2,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
-             --endp_type lf_udp --rates_are_totals --side_a_min_bps=20000 --side_b_min_bps=300000000 --test_rig ID_003 --test_tag 'l3_longevity' --dut_model_num GT-AXE11000 --dut_sw_version 3.0.0.4.386_44266
+             --radio 'radio==1.1.wiphy0,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
+             --radio 'radio==1.1.wiphy1,stations==1,ssid==Netgear5g,ssid_pw==lanforge,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
+             --radio 'radio==1.1.wiphy2,stations==1,ssid==Netgear2g,ssid_pw==lanforge,security==wpa2,\
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down)'
+             --endp_type lf_udp --rates_are_totals --side_a_min_bps=20000 --side_b_min_bps=300000000
+             --test_rig ID_003 --test_tag 'l3_longevity' --dut_model_num GT-AXE11000 --dut_sw_version 3.0.0.4.386_44266
              --dut_hw_version 1.0 --dut_serial_num 12345678 --log_level debug
 
          # Setting wifi_settings per radio
@@ -5858,7 +5887,8 @@ Example running traffic with two radios
             --test_duration 15s
             --polling_interval 5s
             --upstream_port eth2
-            --radio "radio==wiphy1 stations==4 ssid==asus11ax-5 ssid_pw==hello123 security==wpa2  mode==0 wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down&&ht160_enable) "
+            --radio "radio==wiphy1,stations==4,ssid==asus11ax-5,ssid_pw==hello123,security==wpa2,
+wifi_mode==0,wifi_settings==wifi_settings,enable_flags==(ht160_enable&&wpa2_enable&&80211u_enable&&create_admin_down&&ht160_enable)"
             --endp_type lf_udp
             --rates_are_totals
             --side_a_min_bps=20000
@@ -5872,7 +5902,8 @@ Example running traffic with two radios
              --test_duration 20s
              --polling_interval 5s
              --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa2,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,wifi_extra==key_mgmt&&WPA-EAP!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Disabled'
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa2,\
+wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,wifi_extra==key_mgmt&&WPA-EAP!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Disabled'
              --endp_type lf_udp
              --rates_are_totals
              --side_a_min_bps=256000
@@ -5891,7 +5922,8 @@ Example running traffic with two radios
              --test_duration 20s
              --polling_interval 5s
              --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa2,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Disabled'
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa2,\
+wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Disabled'
              --endp_type lf_udp
              --rates_are_totals
              --side_a_min_bps=256000
@@ -5911,7 +5943,8 @@ Example running traffic with two radios
              --test_duration 20s
              --polling_interval 5s
              --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Required'
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,\
+wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TTLS!!identity&&testuser!!passwd&&testpasswd!!ieee80211w&&Required'
              --endp_type lf_ud
              --rates_are_totals
              --side_a_min_bps=256000
@@ -5930,7 +5963,8 @@ Example running traffic with two radios
              --test_duration 20s
              --polling_interval 5s
              --upstream_port 1.1.eth2
-             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Required'
+             --radio 'radio==wiphy1,stations==1,ssid==ax88u_5g,ssid_pw==[BLANK],security==wpa3,\
+wifi_settings==wifi_settings,wifi_mode==0,enable_flags==8021x_radius&&80211r_pmska_cache,wifi_extra==key_mgmt&&WPA-EAP!!pairwise&&GCMP-256!!group&&GCMP-256!!eap&&TLS!!identity&&testuser!!passwd&&testpasswd!!private_key&&/home/lanforge/client.p12!!ca_cert&&/home/lanforge/ca.pem!!pk_password&&lanforge!!ieee80211w&&Required'
              --endp_type lf_udp
              --rates_are_totals
              --side_a_min_bps=256000
@@ -6383,7 +6417,9 @@ INCLUDE_IN_README: False
         default='eth1')
     test_l3_parser.add_argument(
         '--downstream_port',
-        help='--downstream_port <cross connect downstream_port>  for use when downstream is ethernet (eth to eth connection) do not use with wifi stations example: --downstream_port eth2', default=None)
+        help='''--downstream_port <cross connect downstream_port>  for use when downstream is ethernet
+        (eth to eth connection) do not use with wifi stations example: --downstream_port eth2''',
+        default=None)
     test_l3_parser.add_argument(
         '--polling_interval',
         help="--polling_interval <seconds>",
@@ -6533,7 +6569,7 @@ INCLUDE_IN_README: False
     test_l3_parser.add_argument(
         '--dowebgui',
         help='--dowebgui True  if running through webgui',
-        default="False")
+        action='store_true')
     test_l3_parser.add_argument(
         '--test_name',
         help='Test name when running through webgui'
@@ -6546,7 +6582,7 @@ INCLUDE_IN_README: False
     args = parser.parse_args()
 
     if args.help_summary:
-        logger.info(help_summary)
+        print(help_summary)
         exit(0)
 
     dowebgui = False
@@ -6554,7 +6590,7 @@ INCLUDE_IN_README: False
     ip = ""
     if args.dowebgui:
         logger.info("In webGUI execution")
-        if args.dowebgui == "True":
+        if args.dowebgui:
             dowebgui = True
             test_name = args.test_name
             ip = args.lfmgr
@@ -6771,35 +6807,34 @@ INCLUDE_IN_README: False
 
                 logger.debug("wifi_extra: {extra}".format(
                     extra=radio_info_dict['wifi_extra']))
-
-                key_mgmt = '[BLANK]'
-                pairwise = '[BLANK]'
-                group = '[BLANK]'
-                psk = '[BLANK]'
-                eap = '[BLANK]'
-                identity = '[BLANK]'
-                anonymous_identity = "[BLANK]"
-                phase1 = "[BLANK]"
-                phase2 = "[BLANK]"
-                passwd = '[BLANK]'
-                pin = '[BLANK]'
-                pac_file = '[BLANK]'
-                private_key = '[BLANK]'
-                pk_password = '[BLANK]'
-                hessid = "00:00:00:00:00:00"
-                realm = "[BLANK]"
-                client_cert = "[BLANK]"
-                imsi = "[BLANK]"
-                milenage = "[BLANK]"
-                domain = "[BLANK]"
-                roaming_consortium = "[BLANK]"
-                venue_group = "[BLANK]"
-                network_type = "[BLANK]"
-                ipaddr_type_avail = "[BLANK]"
-                network_auth_type = "[BLANK]"
-                anqp_3gpp_cell_net = "[BLANK]"
-
-                ieee80211w = 'Optional'
+                # These values are actually assigned as lists below
+                # key_mgmt = '[BLANK]'
+                # pairwise = '[BLANK]'
+                # group = '[BLANK]'
+                # psk = '[BLANK]'
+                # eap = '[BLANK]'
+                # identity = '[BLANK]'
+                # anonymous_identity = "[BLANK]"
+                # phase1 = "[BLANK]"
+                # phase2 = "[BLANK]"
+                # passwd = '[BLANK]'
+                # pin = '[BLANK]'
+                # pac_file = '[BLANK]'
+                # private_key = '[BLANK]'
+                # pk_password = '[BLANK]'
+                # hessid = "00:00:00:00:00:00"
+                # realm = "[BLANK]"
+                # client_cert = "[BLANK]"
+                # imsi = "[BLANK]"
+                # milenage = "[BLANK]"
+                # domain = "[BLANK]"
+                # roaming_consortium = "[BLANK]"
+                # venue_group = "[BLANK]"
+                # network_type = "[BLANK]"
+                # ipaddr_type_avail = "[BLANK]"
+                # network_auth_type = "[BLANK]"
+                # anqp_3gpp_cell_net = "[BLANK]"
+                # ieee80211w = 'Optional'
 
                 wifi_extra_dict = dict(
                     map(
@@ -7291,7 +7326,7 @@ INCLUDE_IN_README: False
             ip_var_test.stop()
 
     # the banner will be set in Main since the test_l3 object may be imported
-    csv_results_file = ip_var_test.get_results_csv()
+    # csv_results_file = ip_var_test.get_results_csv() # csv_results_file unused flake8
     report.set_title("Test Layer 3 Cross-Connect Traffic: test_l3.py ")
     report.build_banner_left()
     report.start_content_div2()
@@ -7335,7 +7370,7 @@ INCLUDE_IN_README: False
     if ip_var_test.passes():
         test_passed = True
         logger.info("Full test passed, all connections increased rx bytes")
-    if ip_var_test.dowebgui == True:
+    if ip_var_test.dowebgui:
         last_entry = ip_var_test.overall[len(ip_var_test.overall) - 1]
         last_entry["status"] = "Stopped"
         last_entry["timestamp"] = ip_var_test.get_time_stamp_local()

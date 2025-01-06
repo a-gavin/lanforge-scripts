@@ -106,7 +106,7 @@ class CreateBridge(Realm):
         self.create_admin_down = create_admin_down
 
     def build(self):
-        """Create bridge port as specified."""
+        """Create LANforge port(s) as specified."""
         logger.info(f"Creating bridge port \'{self.bridge_eid}\'")
 
         # TODO: Clear IP configuration for bridged ports
@@ -184,7 +184,7 @@ class CreateBridge(Realm):
         logger.info(f"Successfully created bridge port \'{self.bridge_eid}\'")
 
     def cleanup(self):
-        """Remove specified bridge port."""
+        """Remove any conflicting LANforge port(s)."""
         logger.info("Removing any created or conflicting bridge port(s)")
 
         self.rm_port(self.bridge_eid, check_exists=False, debug_=self.debug)
@@ -198,6 +198,7 @@ class CreateBridge(Realm):
 
 
 def parse_args():
+    """Parse CLI arguments."""
     parser = LFCliBase.create_basic_argparse(
         prog='create_bridge.py',
         formatter_class=argparse.RawTextHelpFormatter,
@@ -253,7 +254,6 @@ LICENSE:    Free to distribute and modify. LANforge systems must be licensed.
 
     parser.add_argument('--bridge_name',
                         dest='bridge_eid',
-                        required=True,
                         help='Name of the bridge port to create. This can be either the name only '
                              'or the full EID. If not the full EID, the desired resource will be '
                              'inferred from specified child ports')
@@ -310,6 +310,11 @@ LICENSE:    Free to distribute and modify. LANforge systems must be licensed.
 
 
 def validate_args(args):
+    """Validate CLI arguments."""
+    if args.bridge_eid is None:
+        logger.critical("--bridge_name is required")
+        exit(1)
+
     # Ensure the bridge resource ID is specified,
     # either in the '--bridge_name' argument itself or in the
     # specified ports to bridge ('--bridge_ports' argument)
@@ -354,6 +359,7 @@ def validate_args(args):
 
 
 def main():
+    """Create LANforge bridge port(s) using specified options."""
     args = parse_args()
 
     help_summary = "This script will create and configure a single bridge port "\

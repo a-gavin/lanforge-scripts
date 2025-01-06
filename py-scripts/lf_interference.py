@@ -270,7 +270,7 @@ class interference(cv_test):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="lf_wifi_capacity_test.py",
+        prog="lf_interference.py",
         formatter_class=argparse.RawTextHelpFormatter,
         description="""
         ./lf_interference.py --mgr 192.168.200.38 --port 8080 --lf_user lanforge --lf_password lanforge 
@@ -391,7 +391,22 @@ def main():
                         action='store_true',
                         help="")
 
+    parser.add_argument('--help_summary', 
+                        action="store_true", 
+                        help='Show summary of what this script does')
+
+
     args = parser.parse_args()
+    help_summary='''\
+Use this script to create co-channel and adjacent channel interference, by changing frequency argument.
+Provide same channel for co-channel interference, and adjacent channel for adjacent channel interference.
+This script uses the lf_wifi_capacity_test.py
+'''
+
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
+
     cv_base_adjust_parser(args)
 
     # set up logger

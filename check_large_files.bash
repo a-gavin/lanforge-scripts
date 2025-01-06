@@ -342,12 +342,19 @@ clean_compressed_files() {
 
 clean_lflogs() {
     note "Cleaning LANforge logs..."
-    local f
-    if (( ${#removable_lflogs[@]} > 0 )); then
-        for f in "${removable_lflogs[@]}"; do
-            echo "rm -f $f"
-        done
+    local fname
+    cd /home/lanforge
+    if [[ -s /tmp/removable_lflogs.txt ]]; then
+        while IFS= read -r -d '' fname ; do
+            if [[ -f "$fname" ]]; then
+                echo -n "."
+                rm -f "$fname"
+                sleep 0.05
+            fi
+        done < /tmp/removable_lflogs.txt
     fi
+    rm -f /tmp/removable_lflogs.txt
+    cd -
     removable_lflogs=()
     totals[e]=0
     survey_lflogs
@@ -476,13 +483,18 @@ clean_var_log() {
     note "Vacuuming journal..."
     journalctl --vacuum-size 1M
     local vee=""
+    if [[ -s /tmp/var_log_files.txt ]]; then
+        mapfile -d '' var_log_files < /tmp/var_log_files.txt
+    fi
     if (( $verbose > 0 )); then
         echo "Removing these log files:"
         printf '      %s\n' "${var_log_files[@]}"
         vee="-v"
+        sleep 1
     fi
     if (( ${#var_log_files[@]} < 1 )); then
         note "    No notable files in /var/log to remove: ${#var_log_files[@]} "
+        rm -f /tmp/var_log_files.txt
         return
     fi
     cd /var/log
@@ -511,7 +523,10 @@ clean_var_log() {
             *)
                 rm -f $vee "$file";;
         esac
+        echo -n "."
+        sleep 0.05
     done
+    rm -f /tmp/var_log_files.txt
     cd "$starting_dir"
 }
 
@@ -536,21 +551,27 @@ clean_mnt_lf_files() {
 clean_pcap_files() {
     note "Purging pcap data..."
     cd /tmp
-    rm -f *pcap *pcapng
+    rm -f *pcap *pcapng *pcap.xz *pcapng.xz *.pcap.gz *.pcapng.gz
     cd /home/lanforge
-    local vile_list=(`find tmp/ report-data/ local/tmp/ lf_reports/ html-reports/ Documents/ \
+    find tmp/ report-data/ local/ lf_reports/ html-reports/ Documents/ \
         -type f -a \( \
-               -name '*.pcap'       \
-            -o -name '*.pcap.gz'    \
-            -o -name '*.pcap.xz'    \
-            -o -name '*.pcapng'     \
-            -o -name '*.pcapng.gz'  \
-            -o -name '*.pcapng.xz'  \
-        \) 2>/dev/null ||:`)
+               -iname '*.pcap'       \
+            -o -iname '*.pcap.gz'    \
+            -o -iname '*.pcap.xz'    \
+            -o -iname '*.pcapng'     \
+            -o -iname '*.pcapng.gz'  \
+            -o -iname '*.pcapng.xz'  \
+        \) -print0 > /tmp/pcap_list.txt
+    local vile_list=()
+    if [[ -s /tmp/pcap_list.txt ]]; then
+        mapfile -d '' vile_list < /tmp/pcap_list.txt
+    fi
     counter=1
     for f in "${vile_list[@]}"; do
         (( $verbose > 0 )) && echo "    removing $f" || echo -n " ${counter}/${#vile_list[@]}"
         rm -f "$f"
+        echo -n "."
+        sleep 0.05
         (( counter+=1 ))
     done
     totals[p]=0
@@ -561,20 +582,41 @@ clean_pcap_files() {
 compress_report_data() {
     note "compress report data..."
     cd /home/lanforge
-    # local csvfiles=( $( find /home/lanforge -iname "*.csv"  -print0 ))
-    local vile_list=(`find html-reports/ lf_reports/ report-data/ tmp/ \
-        -type f -a \( \
-               -name '*.csv' \
-            -o -name '*.pdf' \
-            -o -name '*.html' \
-            -o -name '*.pcap' \
-            -o -name '*.pcapng' \)`)
+
+    local vile_list=()
+    mapfile -d '' vile_list < <(cat /tmp/csv_list.txt /tmp/pdf_list.txt /tmp/pcap_list.txt )
+
     counter=1
-    for f in "${vile_list[@]}"; do
-        (( $verbose > 0 )) && echo "    compressing $f" || echo -n " ${counter}/${#vile_list[@]}"
-        nice xz -T0 -5 "$f"
-        (( counter+=1 ))
-    done
+    echo "There are ${#vile_list[@]} files to compress..."
+    if (( ${#vile_list[@]} < 1)); then
+        echo "...not enough files to compress"
+        rm -f /tmp/csv_list.txt /tmp/pdf_list.txt /tmp/pcap_list.txt
+        return
+    fi
+    local line
+    for line in "${vile_list[@]}" ; do
+        echo "$line"
+    done > /tmp/report_list.txt
+    if [[ -x /usr/bin/zstd ]]; then
+        echo "Found zstd..."
+        set -x
+        if [[ -s /home/lanforge/.report.dict ]]; then
+            echo "Found zstd training data in /home/lanforge/.report.dict"
+        else
+            echo "training zstd to /home/lanforge/.report.dict. Do not erase that file."
+            #cat /tmp/csv_list.txt /tmp/pdf_list.txt /tmp/pcap_list.txt > /tmp/zstd.list
+            mapfile -t train_list < /tmp/report_list.txt
+            zstd --train "${train_list[@]}" -o /home/lanforge/.report.dict -v
+        fi
+        echo "compressing..."
+        zstd --filelist /tmp/report_list.txt -D /home/lanforge/.report.dict --rm -v
+        set +x
+    else
+         echo "zstd not found. Using xz..."
+         cat csv_list.txt /tmp/pdf_list.txt /tmp/pcap_list.txt > /tmp/xz.list
+         xz --fast --files0=/tmp/xz.list -T0 -v
+    fi
+    rm -f /tmp/csv_list.txt /tmp/pdf_list.txt /tmp/pcap_list.txt
     totals[r]=0
     cd -
     echo ""
@@ -582,13 +624,19 @@ compress_report_data() {
 
 clean_var_tmp() {
     note "clean var tmp"
+    if [[ ! -s /tmp/var_tmp_files.txt ]]; then
+        note "  no files surveyed"
+        return
+    fi
+    mapfile -d '' var_tmp_files < /tmp/var_tmp_files.txt
     if (( $verbose > 0 )); then
         printf "    %s\n" "${var_tmp_files[@]}"
         sleep 1
     fi
     for f in "${var_tmp_files[@]}"; do
         rm -f "$f"
-        sleep 0.2
+        echo -n '.'
+        sleep 0.05
     done
 }
 
@@ -835,7 +883,7 @@ lf_downloads=()
 survey_lf_downloads() {
     debug "Surveying /home/lanforge, /var/www/html downloads,"
     #echo "*************************************************************"
-    mapfile -t lf_downloads < <(find /home/lanforge/Downloads /var/www/html \
+    mapfile -d '' lf_downloads < <(find /home/lanforge/Downloads /var/www/html \
       -mindepth 1 -maxdepth 1 -type f -a \( \
            -iname '*gz'         \
         -o -iname '*z2'         \
@@ -848,12 +896,14 @@ survey_lf_downloads() {
         -o -iname 'gnu*'        \
         -o -iname 'LANforge*'   \
         -o -iname 'xorp*'       \
-      \))
+      \) -print0 \
+      | tee /tmp/lf_downloads.txt )
     #printf '     %s\n' "${lf_downloads[@]}"
     #echo "*************************************************************"
-
-    if [[ ${lf_downloads+x} = x ]]; then
-        totals[d]=$(du -hc "${lf_downloads[@]}" | awk '/total/{print $1}')
+    local lf_download_count=$(grep -zc $'\0' /tmp/lf_downloads.txt)
+    if (( lf_download_count > 0 )); then
+        totals[d]=$(du -hcs --files0-from=/tmp/lf_downloads.txt \
+                    | tail -1)
         [[ x${totals[d]} = x ]] && totals[d]=0
     else
         totals[d]=0
@@ -880,10 +930,12 @@ survey_ath10_files() {
 var_log_files=()
 survey_var_log() {
     debug "Surveying var log"
-    mapfile -t var_log_files < <(find /var/log -type f -size +256k \
-        -not \( -path '*/journal/*' -o -path '*/sa/*' -o -path '*/lastlog' \) 2>/dev/null ||:)
-    if [[ ${var_log_files+x} = x ]]; then
-        totals[l]=$(du -hc "${var_log_files[@]}" 2>/dev/null | awk '/total/{print $1}' )
+    mapfile -d'' var_log_files < <(find /var/log -type f -size +256k \
+        -not \( -path '*/journal/*' -o -path '*/sa/*' -o -path '*/lastlog' \) -print0 \
+        | tee /tmp/var_log_files.txt 2>/dev/null ||:)
+    local log_count=$(grep -zc $'\0' /tmp/var_log_files.txt)
+    if (( log_count > 0 )); then
+        totals[l]=$(du -hcs --files0-from=/tmp/var_log_files.txt 2>/dev/null | tail -1 )
         [[ x${totals[l]} = x ]] && totals[l]=0 ||:
     else
         totals[l]=0
@@ -895,9 +947,11 @@ survey_var_log() {
 var_tmp_files=()
 survey_var_tmp() {
     debug "Surveying var tmp"
-    mapfile -t var_tmp_files < <(find /var/tmp -type f 2>/dev/null || :)
-    if [[ ${var_tmp_files+x} = x ]]; then
-        totals[t]=$(du -sh "${var_tmp_files[@]}" 2>/dev/null | awk '/total/{print $1}' )
+    # mapfile -d'' -t var_tmp_files < <(find /var/tmp -print0 -type f 2>/dev/null || :)
+    find /var/tmp -type f -print0 > /tmp/var_tmp_files.txt 2>/dev/null ||:
+    local var_tmp_count=$(grep -zc $'\0' /tmp/var_tmp_files.txt)
+    if (( var_tmp_count > 0 )); then
+        totals[t]=$(du -shc --files0-from=/tmp/var_tmp_files.txt | tail -1 )
         [[ x${totals[t]} = x ]] && totals[t]=0 ||:
     else
         totals[t]=0
@@ -938,13 +992,18 @@ survey_compressed_files() {
     debug "Surveying compressed /home/lanforge "
     cd /home/lanforge
     mapfile -t compressed_files < <( find Documents/ html-reports/ lf_reports/ report-data/ tmp/ -type f \
-        -a \( -name "*.gz" -o -name "*.xz" -o -name "*.bz2" -o -name "*.7z" -o -name "*.zip" \) 2>/dev/null ||:)
+        -a \( -iname "*.gz" \
+            -o -iname "*.xz" \
+            -o -iname "*.bz2" \
+            -o -iname "*.7z" \
+            -o -iname "*.zst" \
+            -o -iname "*.zsd" \
+            -o -iname "*.zip" \) 2>/dev/null ||:)
     if (( ${#compressed_files[@]} < 1 )); then
         debug "no compressed files found"
         totals[z]=0
         return
     fi
-
     totals[z]=$( du -xhc "${compressed_files[@]}" 2>/dev/null | awk '/total/{print $1}' )
     # set +veux
     [[ x${totals[z]} = x ]] && totals[z]=0 ||:
@@ -966,22 +1025,22 @@ survey_pcap_files() {
 
     local fsiz=0
     local fnum=0
-    local pcap_list=(`find tmp/ report-data/ local/tmp/ lf_reports/ html-reports/ Documents/ \
+    find tmp/ report-data/ local/tmp/ lf_reports/ html-reports/ Documents/ /tmp \
         -type f -a \( \
-               -name '*.pcap'       \
-            -o -name '*.pcap.gz'    \
-            -o -name '*.pcap.xz'    \
-            -o -name '*.pcapng'     \
-            -o -name '*.pcapng.gz'  \
-            -o -name '*.pcapng.xz'  \
-        \) 2>/dev/null ||:`)
-    pcap_list+=(`find /tmp -type f -a \( -name '*pcap' -o -name '*.pcapng' \)`)
-    fnum=$(( 0 + ${#pcap_list[@]} ))
-
+               -iname '*.pcap'       \
+            -o -iname '*.pcap.gz'    \
+            -o -iname '*.pcap.xz'    \
+            -o -iname '*.pcapng'     \
+            -o -iname '*.pcapng.gz'  \
+            -o -iname '*.pcapng.xz'  \
+        \) -print0 \
+        > /tmp/pcap_files.txt 2>/dev/null ||:
+    # pcap_list+=(`find /tmp -type f -a \( -name '*pcap' -o -name '*.pcapng' \)`)
+    fnum=$(grep -zc $'\0' /tmp/pcap_files.txt)
     if (( $fnum > 0 )); then
-        fsiz=$(du -hc "${pcap_list[@]}" | awk '/total/{print $1}')
+        fsiz=$(du -hcs --files0-from=/tmp/pcap_files.txt | tail -1)
     fi
-    totals[p]="$fnum files ($fsiz): ${#pcap_list[@]} pcap"
+    totals[p]="$fnum files ($fsiz):  pcap"
     [[ x${totals[p]} = x ]] && totals[p]=0
     cd "$starting_dir"
 }
@@ -992,28 +1051,34 @@ survey_lflogs() {
     local fsiz=0
     local fnum=0
     cd /home/lanforge
-    mapfile -t removable_lflogs < <( find ./vr_conf/./wifi/ ./l4logs/ /usr/local/lanforge/nginx/ ./l3helper/ \
+    mapfile -d '' removable_lflogs < <( find \
+        ./vr_conf/ ./wifi/ ./l4logs/ /usr/local/lanforge/nginx/ ./l3helper/ /var/log/httpd/ \
         -type f -a \( \
-                -name 'error.log'               \
-            -o -name '*_access.log'             \
-            -o -name '*_error.log'              \
-            -o -name 'lanforge_log_*'           \
-            -o -name 'run_*.out'                \
-            -o -name 'ath10k_fw_kern_logs*txt'  \
-            -o -name 'xorp-log*.txt'            \
-            -o -name 'HgenHelper*_log*'         \
-            -o -name 'hostapd_log_*'            \
-            -o -name 'wpa_supplicant_log_*'     \
-            -o -name 'gnuforge_log_*'           \
-            -o -name 'helper_shared_log_*'      \
-        \) 2>/dev/null ||:)
-    fnum=$(( 0 + ${#removable_lflogs[@]} ))
-
+                -iname 'error.log'               \
+            -o -iname '*access.log'              \
+            -o -iname '*access_log'              \
+            -o -iname '*access_log-*'            \
+            -o -iname '*error.log'               \
+            -o -iname '*error_log'               \
+            -o -iname '*error_log-*'             \
+            -o -iname 'ssl_error_log'            \
+            -o -iname 'ssl_error_log-*'          \
+            -o -iname 'lanforge_log_*'           \
+            -o -iname 'run_*.out'                \
+            -o -iname 'ath10k_fw_kern_logs*txt'  \
+            -o -iname 'xorp-log*.txt'            \
+            -o -iname 'HgenHelper*_log*'         \
+            -o -iname 'hostapd_log_*'            \
+            -o -iname 'wpa_supplicant_log_*'     \
+            -o -iname 'gnuforge_log_*'           \
+            -o -iname 'helper_shared_log_*'      \
+        \) -print0 > /tmp/removable_lflogs.txt ||:)
+    fnum=$( grep -cz '' /tmp/removable_lflogs.txt )
     #printf '      %s\n' "${removable_lflogs[@]}"
     if (( $fnum > 0 )); then
-        fsiz=$(du -hc "${removable_lflogs[@]}" | awk '/total/{print $1}')
+        fsiz=$(du -sch --files0-from=/tmp/removable_lflogs.txt | tail -1)
     fi
-    totals[e]="$fnum files ($fsiz): ${#removable_lflogs[@]}"
+    totals[e]="$fnum files ($fsiz)"
     [[ x${totals[e]} = x ]] && totals[e]=0
     cd "$starting_dir"
 }
@@ -1025,18 +1090,34 @@ survey_report_data() {
 
     local fsiz=0
     local fnum=0
-    local csv_list=(`find report-data/ html-reports/ lf_reports/ \
-        -type f -a -name '*.csv' 2>/dev/null ||:`)
-    local pdf_list=(`find report-data/ html-reports/ lf_reports/ Documents/ \
-        -type f -a -name '*.pdf' 2>/dev/null ||:`)
-    local pcap_list=(`find tmp/ report-data/ local/tmp/ lf_reports/ Documents/ \
-        -type f -a \( -name '*.pcap' -o -name '*.pcapng' \) 2>/dev/null ||:`)
-    fnum=$(( ${#csv_list[@]} + ${#pdf_list[@]} + ${#pcap_list[@]} ))
+
+    find report-data/ html-reports/ lf_reports/ \
+        -type f -a -iname '*.csv' -print0 \
+        > /tmp/csv_list.txt 2>/dev/null ||:
+    # grep -zc $'\0' is like wc -l for null terminated lines
+    local csv_count=$(grep -zc $'\0' /tmp/csv_list.txt)
+
+    find report-data/ html-reports/ lf_reports/ Documents/ \
+        -type f -a -iname '*.pdf' -print0  \
+        > /tmp/pdf_list.txt 2>/dev/null ||:
+    local pdf_count=$(grep -zc $'\0' /tmp/pdf_list.txt)
+
+    find tmp/ report-data/ local/tmp/ lf_reports/ Documents/ \
+        -type f -a \( -iname '*.pcap' -o -iname '*.pcapng' \) -print0 \
+         > /tmp/pcap_list.txt 2>/dev/null ||:
+    local pcap_count=$(grep -zc $'\0' /tmp/pcap_list.txt)
+
+    fnum=$(( csv_count + pdf_count + pcap_count ))
 
     if (( $fnum > 0 )); then
-        fsiz=$(du -hc "${csv_list[@]}" "${pdf_list[@]}" "${pcap_list[@]}" | awk '/total/{print $1}')
+        fsiz=$(du -hc \
+                --files0-from=/tmp/csv_list.txt \
+                --files0-from=/tmp/pdf_list.txt \
+                --files0-from=/tmp/pcap_list.txt \
+                | awk '/total/{print $1}')
     fi
-    totals[r]="$fnum files ($fsiz): ${#csv_list[@]} csv, ${#pdf_list[@]} pdf, ${#pcap_list[@]} pcap"
+    totals[r]="$fnum files ($fsiz): $csv_count csv, $pdf_count pdf, $pcap_count pcap"
+
     [[ x${totals[r]} = x ]] && totals[r]=0
     # report_files=("CSV files: $fnum tt $fsiz")
     cd "$starting_dir"

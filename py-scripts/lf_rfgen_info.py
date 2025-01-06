@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-# flake8: noqa
 
 '''
 NAME:
-lf_hackrf_info.py
+lf_rfgen_info.py
 
 PURPOSE:
-Read the hackrf_info from lanforge
+This script will read the configuration settings of the RF-Generators connected to a LANforge.
 May be used as a module
 
 EXAMPLE:
 
-./lf_hackrf_info --mgr <ip>
+./lf_rfgen_info --mgr <ip>
 
 NOTES:
 
@@ -32,48 +31,51 @@ import importlib
 logger = logging.getLogger(__name__)
 lf_logger_config = importlib.import_module("lf_logger_config")
 
-class lf_hackrf_info():
+
+class lf_rfgen_info():
     def __init__(self,
-                _mgr='localhost',
-                _port='4001'):
+                 _mgr='localhost',
+                 _port='4001'):
         self.mgr = _mgr
         self.port = _port
-        self.hackrf_info = ''
+        self.rfgen_info = ''
 
-    def get_hackrf_info(self):
-        tn = telnetlib.Telnet(self.mgr,port=self.port) # Telnet(host=None, port=0[, timeout])
+    def get_rfgen_info(self):
+        tn = telnetlib.Telnet(self.mgr, port=self.port)  # Telnet(host=None, port=0[, timeout])
 
         # command to read all
-        CMD=b'show_rfgen'
+        CMD = b'show_rfgen'
 
         tn.read_until(b">>")
-        tn.write(CMD +b"\n")
+        tn.write(CMD + b"\n")
         tn.write(b"exit\n")
 
-        self.hackrf_info=tn.read_all().decode('ascii')
+        self.rfgen_info = tn.read_all().decode('ascii')
 
-        logger.info(self.hackrf_info)
-        return self.hackrf_info
+        logger.info(self.rfgen_info)
+        return self.rfgen_info
+
 
 def main():
+
     # arguments
     parser = argparse.ArgumentParser(
-        prog='lf_check.py',
+        prog='lf_rfgen_info.py',
         formatter_class=argparse.RawTextHelpFormatter,
         epilog='''\
-            lf_hackrf_info.py
+            lf_rfgen_info.py
             ''',
         description='''\
 NAME:
-lf_hackrf_info.py
+lf_rfgen_info.py
 
 PURPOSE:
-Read the hackrf_info from lanforge
+Read the rfgen_info from lanforge
 May be used as a module
 
 EXAMPLE:
 
-./lf_hackrf_info --mgr <ip>
+./lf_rfgen_info --mgr <ip>
 
 NOTES:
 
@@ -93,25 +95,32 @@ NOTES:
     parser.add_argument('--log_level',
                         default=None,
                         help='Set logging level: debug | info | warning | error | critical')
+    # help summary
+    parser.add_argument('--help_summary',
+                        default=None,
+                        action="store_true",
+                        help='Show summary of what this script does')
 
-    
     args = parser.parse_args()
+    help_summary = '''\
+This script will read the configuration settings of the RF-Generators connected to a LANforge.
+'''
+
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
 
     logger_config = lf_logger_config.lf_logger_config()
 
     if args.log_level:
         logger_config.set_level(level=args.log_level)
 
-    hackrf = lf_hackrf_info(_mgr=args.mgr,
-                            _port=args.port)
+    rfgen = lf_rfgen_info(_mgr=args.mgr, _port=args.port)
 
-    rf_info = hackrf.get_hackrf_info()
+    rf_info = rfgen.get_rfgen_info()
 
     logger.info(rf_info)
 
 
-
-
 if __name__ == '__main__':
     main()
-

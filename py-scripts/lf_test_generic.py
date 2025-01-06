@@ -1210,7 +1210,7 @@ def main():
 
     required.add_argument("--lf_user", type=str, help="user: lanforge", default=None)
     required.add_argument("--lf_passwd", type=str, help="passwd: lanforge", default=None)
-    required.add_argument('--test_type', type=str, help='type of command to run. Options: ping, iperf3-client, iperf3-server, iperf3, lfcurl', required=True)
+    required.add_argument('--test_type', type=str, help='type of command to run. Options: ping, iperf3-client, iperf3-server, iperf3, lfcurl')
 
     optional.add_argument('--mgr', help='ip address of lanforge script should be run on. example: 192.168.102.211', default=None)
     optional.add_argument('--mgr_port', help='port which lanforge is running on, on lanforge machine script should be run on. example: 8080', default=8080)
@@ -1268,17 +1268,38 @@ def main():
     optional.add_argument('--log_level', default=None, help='Set logging level: debug | info | warning | error | critical')
     optional.add_argument('--lf_logger_json', help="--lf_logger_config_json <json file> , json configuration of logger")
     optional.add_argument('--debug', '-d', default=False, action="store_true", help='Enable debugging')
+    optional.add_argument('--help_summary', action="store_true", help='Show summary of what this script does')
+
 
     #check if the arguments are empty?
     if (len(sys.argv) <= 2 and not sys.argv[1]):
         print("This python file needs the minimum required args. See add the --help flag to check out all possible arguments.")
         sys.exit(1)
+
+    help_summary='''\
+lf_test_generic.py will create stations and endpoints to generate traffic based on a command-line specified command type.
+
+This script will create a variable number of stations to test generic endpoints. Multiple command types can be tested
+including ping, speedtest, lfcurl, iperf, generic types. The test will check the last-result attribute for different things
+depending on what test is being run. Ping will test for successful pings, speedtest will test for download
+speed, upload speed, and ping time, generic will test for successful generic commands.
+
+This script also *does not* use any other file except lanforge_api.py. 
+'''
         
     args = parser.parse_args()
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
+
     logger_config = lf_logger_config.lf_logger_config()
     # set the logger level to requested value
     logger_config.set_level(level=args.log_level)
     logger_config.set_json(json_file=args.lf_logger_json)
+
+    if not args.test_type:
+        logger.critical("--test_type is a required paramater Options: ping, iperf3-client, iperf3-server, iperf3, lfcurl")
+
     if args.create_report:
         if args.report_file_path is None:
             new_file_path = str(datetime.datetime.now().strftime("%Y-%m-%d-%H-h-%M-m-%S-s")).replace(':',

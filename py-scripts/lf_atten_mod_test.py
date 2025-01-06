@@ -3,7 +3,7 @@
 """
 NAME:       lf_atten_mod_test.py
 
-PURPOSE:    This script is used to create the user-specified Layer-3 cross-connection.
+PURPOSE:    lf_atten_mod_test.py is used to modify and/or read the LANforge Attenuator settings.
 
 EXAMPLE:    Set channel four (zero-indexed) of all attenuators on LANforge system \'192.168.200.12\'
             to attenuation value 220 ddB (22.0 dB).
@@ -62,14 +62,14 @@ class CreateAttenuator(Realm):
 
 def main():
     # create_basic_argparse defined in lanforge-scripts/py-json/LANforge/lfcli_base.py
-    parser = Realm.create_basic_argparse(
+    parser = Realm.create_bare_argparse(
         prog='lf_atten_mod_test.py',
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=None,
         description='''\
 NAME:       lf_atten_mod_test.py
 
-PURPOSE:    This script is used to create the user-specified Layer-3 cross-connection.
+PURPOSE:    lf_atten_mod_test.py is used to modify and/or read the LANforge Attenuator settings. 
 
 EXAMPLE:    Set channel four (zero-indexed) of all attenuators on LANforge system \'192.168.200.12\'
             to attenuation value 220 ddB (22 dB).
@@ -82,7 +82,14 @@ EXAMPLE:    Set channel four (zero-indexed) of all attenuators on LANforge syste
     parser.add_argument('--atten_serno', help='Serial number for requested attenuator, or \'all\'',              default='all')
     parser.add_argument('--atten_idx',   help='Attenuator index eg. For module 1 = 0, module 2 = 1, or \'all\'', default='all')
     parser.add_argument('--atten_val',   help='Requested attenuation in 1/10ths of dB (ddB).',                   default=0)
+
     args = parser.parse_args()
+    help_summary='''\
+lf_atten_mod_test.py is used to modify and/or read the LANforge Attenuator settings.
+'''
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
 
     # set up logger
     logger_config = lf_logger_config.lf_logger_config()

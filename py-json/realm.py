@@ -471,9 +471,9 @@ class Realm(LFCliBase):
         tos = _tos
         # Convert some human readable values to numeric needed by LANforge.
         if _tos == "BK":
-            tos = "64"
+            tos = "32"
         if _tos == "BE":
-            tos = "96"
+            tos = "100"
         if _tos == "VI":
             tos = "128"
         if _tos == "VO":
@@ -481,7 +481,7 @@ class Realm(LFCliBase):
         if _tos == "Voice":
             tos = "184"
         if _tos == "Video":
-            tos = "56"
+            tos = "136"
         data = {
             "name": ename,
             "tos": tos
@@ -796,7 +796,7 @@ class Realm(LFCliBase):
 
             elif pattern.find("[") > 0:
                 # TODO: regex below might have too many hack escapes
-                match = re.search(r"^([^\[]+)\[(\d+)\.\.(\d+)\]$", pattern)
+                match = re.search(r"^([^\[]+)\[(\\d+)\.\.(\\d+)\]$", pattern)
                 if match.group(0):
                     if debug_:
                         logger.debug("[group1]: ", match.group(1))
@@ -969,7 +969,7 @@ class Realm(LFCliBase):
     @staticmethod
     def duration_time_to_milliseconds(time_string):
         if isinstance(time_string, str):
-            pattern = re.compile("^(\d+)(\S+$)")
+            pattern = re.compile("^(\\d+)(\\S+$)")
             td = pattern.match(time_string)
             if td:
                 dur_time = int(td.group(1))
@@ -996,7 +996,7 @@ class Realm(LFCliBase):
     @staticmethod
     def duration_time_to_seconds(time_string):
         if isinstance(time_string, str):
-            pattern = re.compile("^(\d+)([dhms]$)")
+            pattern = re.compile("^(\\d+)([dhms]$)")
             td = pattern.match(time_string)
             if td:
                 dur_time = int(td.group(1))

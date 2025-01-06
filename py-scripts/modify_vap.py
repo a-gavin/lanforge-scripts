@@ -142,10 +142,19 @@ use-bss-transition   | 0x80000000000   # Enable BSS transition.
     optional = parser.add_argument_group('optional arguments')
     optional.add_argument('--enable_flag', help='VAP flags to add', default=list(), action='append')
     optional.add_argument('--disable_flag', help='VAP flags to disable', default=list(), action='append')
-    optional.add_argument('--vap', help='VAP to modify', required=True)
+    optional.add_argument('--vap', help='VAP to modify')
     optional.add_argument('--mac', default="NA")
 
     args = parser.parse_args()
+
+    help_summary='''\
+./modify_vap.py will modify VAPs on a system. Use the enable_flag to create a flag on a VAP.
+Turn off a flag with the disable_flag option. A list of available flags are available in the
+add_vap.py file in py-json/LANforge.
+'''
+    if args.help_summary:
+        print(help_summary)
+        exit(0)
 
     # set up logger
     logger_config = lf_logger_config.lf_logger_config()
@@ -156,6 +165,10 @@ use-bss-transition   | 0x80000000000   # Enable BSS transition.
     if args.lf_logger_config_json:
         logger_config.lf_logger_config_json = args.lf_logger_config_json
         logger_config.load_lf_logger_config()
+
+    if not args.vap:
+        logger.critical("the folowing arguments are required: --vap :")
+        exit(1)
 
 
     modify_vap = ModifyVAP(_host=args.mgr,

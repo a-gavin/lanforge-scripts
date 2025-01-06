@@ -1,9 +1,9 @@
-# #!/usr/bin/env python3
+#!/usr/bin/env python3
 # flake8: noqa
 
 
 
-"""
+'''
     NAME: lf_interop_video_streaming.py
     Purpose: To be generic script for LANforge-Interop devices(Real clients) which runs layer4-7 traffic
     For now the test script supports for Video streaming of real devices.
@@ -42,7 +42,7 @@
     SCRIPT_CATEGORIES:   Performance,  Functional, Report Generation
 
     NOTES:
-        1. Use './lf_interop_video_streaming.py --help' to see command line usage and options.
+        1. Use "./lf_interop_video_streaming.py --help" to see command line usage and options.
         2. If --device_list are not given after passing the CLI, a list of available devices will be displayed on the terminal.
         3. To run the test by specifying the incremental capacity, enable the --incremental flag. 
         
@@ -55,9 +55,7 @@
 
         License: Free to distribute and modify. LANforge systems must be licensed.
         Copyright 2023 Candela Technologies Inc.
-
-
-"""
+'''
 import sys
 import os
 import importlib
@@ -976,12 +974,16 @@ class VideoStreamingTest(Realm):
 
 def main():
     help_summary = '''\
-    The Candela Web browser test is designed to measure an Access Point’s client capacity and performance when handling different amounts of Real clients like android, Linux,
-    windows, and IOS. The test allows the user to increase the number of clients in user-defined steps for each test iteration and measure the per client and the overall throughput for
-    this test, we aim to assess the capacity of network to handle high volumes of traffic while
-    each trial. Along with throughput other measurements made are client connection times, Station 4-Way Handshake time, DHCP times, and more. The expected behavior is for the
-    AP to be able to handle several stations (within the limitations of the AP specs) and make sure all Clients get a fair amount of airtime both upstream and downstream. An AP that
-    scales well will not show a significant overall throughput decrease as more Real clients are added.
+The Candela Web browser test is designed to measure an Access Point’s client capacity and 
+performance when handling different amounts of Real clients like android, Linux,
+windows, and IOS. The test allows the user to increase the number of clients in user-defined
+steps for each test iteration and measure the per client and the overall throughput for
+this test, we aim to assess the capacity of network to handle high volumes of traffic while
+each trial. Along with throughput other measurements made are client connection times, 
+Station 4-Way Handshake time, DHCP times, and more. The expected behavior is for the
+AP to be able to handle several stations (within the limitations of the AP specs) 
+and make sure all Clients get a fair amount of airtime both upstream and downstream. An AP that
+scales well will not show a significant overall throughput decrease as more Real clients are added.
     '''
 
     parser = argparse.ArgumentParser(
@@ -1047,7 +1049,7 @@ def main():
     """)
 
         
-    parser.add_argument("--host", "--mgr", required = True, help='specify the GUI to connect to, assumes port '
+    parser.add_argument("--host", "--mgr", dest="host", help='specify the GUI to connect to, assumes port '
                                                                         '8080')
     parser.add_argument("--ssid", default="ssid_wpa_2g", help='specify ssid on which the test will be running')
     parser.add_argument("--passwd", default="something", help='specify encryption password  on which the test will '
@@ -1059,7 +1061,8 @@ def main():
     parser.add_argument("--urls_per_tenm", type=int, default=100, help='specify the number of url you want to test on '
                                                                     'per minute')
     parser.add_argument('--duration', type=str, help='time to run traffic')
-    parser.add_argument('--test_name',required = True, help='Name of the Test')
+    parser.add_argument('--test_name',
+                         help='Name of the Test')
     parser.add_argument('--dowebgui',help="If true will execute script for webgui", default=False, type=bool)
     parser.add_argument('--result_dir',help="Specify the result dir to store the runtime logs <Do not use in CLI, --used by webui>", default='')
     # parser.add_argument('--incremental',help="Specify the incremental values <1,2,3..>", required = True, type=str)
@@ -1076,12 +1079,21 @@ def main():
     parser.add_argument('--no_laptops', help="--to not use laptops", action = 'store_false')
     parser.add_argument('--postcleanup', help="Cleanup the cross connections after test is stopped", action = 'store_true')
     parser.add_argument('--precleanup', help="Cleanup the cross connections before test is started", action = 'store_true')
-    parser.add_argument('--help_summary', help='Show summary of what this script does', default=None)
+    parser.add_argument('--help_summary', help='Show summary of what this script does', action="store_true")
     args = parser.parse_args()
 
     if args.help_summary:
         print(help_summary)
         exit(0)
+
+    if not args.host:
+        logger.error("--host/--mgr required arguments")
+        exit(1)
+
+    if not args.test_name:
+        logger.error("--test_name required arguments")
+        exit(1)
+
 
     media_source_dict={
                        'dash':'1',

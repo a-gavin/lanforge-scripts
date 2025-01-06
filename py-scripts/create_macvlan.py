@@ -140,11 +140,13 @@ class CreateMacVlan(Realm):
                     macvlan_profile.gateway = ipv4_gateways[ix]
 
     def cleanup(self):
+        """Remove any conflicting LANforge port(s)."""
         logger.info("Cleaning up any created or conflicting MACVLAN ports")
         for macvlan_profile in self.macvlan_profiles:
             macvlan_profile.cleanup()
 
     def build(self):
+        """Create LANforge port(s) as specified."""
         logger.info("Creating MACVLAN port(s)")
         for macvlan_profile in self.macvlan_profiles:
             ret = macvlan_profile.create(debug=self.debug, sleep_time=0)
@@ -158,6 +160,7 @@ class CreateMacVlan(Realm):
 
 
 def parse_args():
+    """Parse CLI arguments."""
     parser = LFCliBase.create_bare_argparse(
         prog='create_macvlan.py',
         # formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -234,8 +237,8 @@ INCLUDE_IN_README:
     parser.add_argument('--parent', '--parent_port', '--macvlan_parent',
                         dest='parent_port',
                         help='Parent port used by created MACVLAN port(s)',
-                        default=None,
-                        required=True)
+                        # required=True, presence of the arguement checked outside the parser
+                        default=None)
     parser.add_argument('--macvlan_ids',
                         dest='macvlan_ids',
                         nargs='+',
@@ -243,8 +246,8 @@ INCLUDE_IN_README:
                              'One MACVLAN port is created per ID. For static IP configuration, '
                              'the number of IDs specified in this argument must match the number '
                              'of static IP addresses specified in the \'--ipv4_addresses\'.',
-                        default=None,
-                        required=True)
+                        # required=True, presence of the argument checked outside the parser
+                        default=None)
 
     # Optional arguments
     parser.add_argument('--cleanup',
@@ -293,6 +296,16 @@ INCLUDE_IN_README:
 
 
 def validate_args(args):
+    """Validate CLI arguments."""
+
+    if args.parent_port is None:
+        logger.critical("--parent or --parent_port or --macvlan_parent argument required")
+        exit(1)
+
+    if args.macvlan_ids is None:
+        logger.critical("--macvlan_ids argument required")
+        exit(1)
+
     # User either specifies DHCPv4, static IPv4 configuration, or no IPv4 configuration
     #
     # If user specified static configuration, ensure that number of specified ports
@@ -330,6 +343,7 @@ def validate_args(args):
 
 
 def main():
+    """Create LANforge MACVLAN port(s) using specified options."""
     args = parse_args()
 
     help_summary = "This script will create and configure one or more MACVLAN ports " \
