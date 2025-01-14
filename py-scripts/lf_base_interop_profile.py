@@ -640,7 +640,7 @@ class RealDevice(Realm):
                  encryption_6g=None,
                  eap_method_6g=None,
                  eap_identity_6g=None,
-                 selected_bands=['5g'],
+                 selected_bands=None,
                  groups=False,
                  _debug_on=False,
                  _exit_on_error=False):
@@ -672,7 +672,7 @@ class RealDevice(Realm):
         self.eap_method_6g = eap_method_6g
         self.eap_identity_6g = eap_identity_6g
 
-        self.selected_bands = selected_bands
+        self.selected_bands = selected_bands if selected_bands else ["5g"]
 
         self.devices = []
         self.devices_data = {}
@@ -1349,7 +1349,7 @@ class RealDevice(Realm):
         # print('Port\t\thw version\t\t\tMAC')
         selected_t_devices = {}
         for selected_device in self.selected_device_eids:
-            for device, device_details in self.devices_data.items():
+            for device, _device_details in self.devices_data.items():
                 if (selected_device + '.' in device):
                     # filtering interfaces other than wlan0 for android
                     if ('Apple' not in self.devices_data[device]['hw version'] and 'Linux' not in self.devices_data[device]['hw version'] and 'Win' not in self.devices_data[device]['hw version']):
