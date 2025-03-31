@@ -76,8 +76,10 @@ if sys.version_info[0] != 3:
     exit(1)
 
 sys.path.append(os.path.join(os.path.abspath(__file__ + "../../../")))
-
 LFUtils = importlib.import_module("py-json.LANforge.LFUtils")
+lanforge_api = importlib.import_module("lanforge_client.lanforge_api")
+from lanforge_client.lanforge_api import LFSession  # noqa: E402
+
 realm = importlib.import_module("py-json.realm")
 Realm = realm.Realm
 logger = logging.getLogger(__name__)
@@ -237,10 +239,6 @@ class lf_clean(Realm):
                 self.cxs_done = True
 
             return still_looking_cxs
-
-    def get_json1(self):
-        response = self.json_get("port/all")
-        return response
 
     def layer3_endp_clean(self):
         """
@@ -574,6 +572,204 @@ class lf_clean(Realm):
         logger.debug(f"clean_sta: finished_clean_port_mgr {finished_clean_port_mgr}")
 
 
+def valid_eids(eids: list) -> bool:
+    """Check whether specified EIDs are valid or not
+
+    Args:
+        eids (list): List of EID strings
+
+    Returns:
+        bool: True when all EIDs are valid, False otherwise
+    """
+    # TODO
+    return True
+
+
+def query_data(session: LFSession, endpoint: str, eids: list = None, column_names: list = None) -> tuple:
+    """Query active LANforge session for desired endpoint data
+
+    By default will return all present ports with basic data
+    for each, including alias, type, and status (down and phantom).
+
+    If specified, this function ensures desired EIDs and column names are present
+    before returning data. If specified and data not present, returns non-zero and None.
+
+    Args:
+        session (LFSession): Active LANforge JSON API session
+        endpoint: (str): LANforge JSON API endpoint
+        eids (list, optional): List of EIDs (e.g. '1.1.wlan0' or '1.31', depends on endpoint).
+        column_names (list, optional): Endpoint columns to query
+
+    Returns:
+        tuple: On success, returns zero and dict of data for available data returned by queried endpoint.
+               Returned dict contains EIDs as keys and individual per-EID data as values.
+               On failure, returns non-zero and None.
+    """
+    eids_specified = True
+    if eids and not valid_eids(eids):
+        return -1, None
+    elif not eids:
+        # TODO: Change from "/list" to "all"
+        eids = ["/list"]
+        eids_specified = False
+
+    # TODO: URL encode column names
+    columns_specified = True
+    if not column_names:
+        column_names = []
+        columns_specified = False
+
+    # Attempt to find the method which queries the JSON endpoint
+    query_method = session.find_method(endpoint)
+    if not query_method:
+        logger.error(f"Failed to find LANforge API JSON GET method for JSON endpoint {endpoint}")
+        return -1, None
+
+    # Run endpoint query
+    try:
+        query_results = query_method(eid_list=eids,
+                                     requested_col_names=column_names)
+    except ValueError:
+        logger.error("Failed to query LANforge for port data")
+        return -1, None
+
+    # Reformat returned port data from list of dicts to one single dict
+    #
+    # Queried data is of format '[{eid: {'alias': 'xxx', ...}}, ...],
+    # which is a bit unwieldy and tedious to unpack over and over.
+    # A single dict where keys are EIDs is much easier to process
+    if not query_results:
+        logger.error(f"Failed to query endpoint '{endpoint}' for EIDs '{eids}'")
+        return -1, None
+    elif not isinstance(query_results, list):
+        logger.error(f"Invalid data format, data: {query_results}")
+        return -1, None
+    elif len(query_results) == 0:
+        logger.error("No data returned from query")
+        return -1, None
+
+    ret_data = {}
+    for result in query_results:
+        if not isinstance(result, dict):
+            logger.error(f"Invalid data format, data: {query_results}")
+            return -1, None
+
+        per_eid_data_dict_keys = list(result.keys())
+        if len(per_eid_data_dict_keys) != 1:
+            logger.error(f"Invalid data format, data: {query_results}")
+            return -1, None
+
+        per_eid_data = result[per_eid_data_dict_keys[0]]
+        if not isinstance(per_eid_data, dict):
+            logger.error(f"Invalid data format, data: {query_results}")
+            return -1, None
+
+        # Data format good, add to results
+        ret_data.update(result)
+
+    # Ensure all desired EIDs are present in returned data
+    ret_eids = ret_data.keys()
+    if eids_specified:
+        for eid in eids:
+            if eid not in ret_eids:
+                logger.error(f"Queried EID '{eid}' not in query results")
+                return -1, None
+
+    # Ensure all desired columns present per-EID in returned data
+    if columns_specified:
+        for element in ret_eids:
+            keys = list(ret_data[element].keys())
+
+            for column in column_names:
+                # TODO: Fix hack to replace URL encoded characters w/ space
+                column = column.replace("+", " ")
+                if column not in keys:
+                    logger.error(f"Queried data column '{column}' not in query results")
+                    return -1, None
+
+    return 0, ret_data
+
+
+def query_ports(session: LFSession, port_eids: list = None, column_names: list = None) -> tuple:
+    """Query active LANforge session for port data
+
+    If 'port_eids' is None, returns data for all ports present on system.
+    If 'column_names' is None, returns basic data for desired ports, including
+    alias, type, status (down and phantom), and IPv4 address.
+
+    Args:
+        session (LFSession): Active LANforge JSON API session
+        port_eids (list, optional): List of port EIDs (e.g. '1.1.wlan0'). Defaults to None
+        column_names (list, optional): Port columns to query. Defaults to None.
+
+    Returns:
+        tuple: On success, returns zero and dict of data for queried ports on system.
+               Returned dict contains port EIDs as keys and individual port data as values.
+               On failure, returns non-zero and None.
+    """
+    # Always query for basic data, including alias, type, and status (down and phantom)
+    if not column_names:
+        column_names = ["alias", "down", "phantom", "port+type", "ip"]
+
+    # At a minimum, the 'alias' and 'port+type' fields should always be queried
+    if "alias" not in column_names:
+        column_names.append("alias")
+    if "port+type" not in column_names:
+        column_names.append("port+type")
+
+    return query_data(session=session,
+                      endpoint="/port",
+                      eids=port_eids,
+                      column_names=column_names)
+
+
+def remove_ports(session: LFSession, port_type: str = None) -> int:
+    """Remove LANforge virtual ports
+
+    LANforge does not permit removing hardware or transient ports. This
+    includes ports of type WiFi radio, Ethernet, Generic.
+
+    Args:
+        session (LFSession): Active LANforge JSON API session
+        port_type (str, Optional): Name of port type, e.g. 'WIFI-STA'. If not
+                                   specified, all virtual ports removed
+
+    Returns:
+        int: 0 on success, non-zero on failure
+    """
+    # TODO: Make these as an enum-like data structure for use w/o string-ness
+    REMOVABLE_PORT_TYPES = [
+        "MAC-VLAN",
+        "802.1Q VLAN",
+        "Redirect-Device",
+        "WIFI-STA",
+        "WIFI-AP",
+        "WIFI-MON",
+    ]
+    if port_type and port_type not in REMOVABLE_PORT_TYPES:
+        logger.error(f"Removal or port type '{port_type}' not permitted. Only ports of the "
+                     f"following types may be removed: {REMOVABLE_PORT_TYPES}")
+        return -1
+
+    ret, ports_data = query_ports(session)
+    if ret != 0:
+        return ret
+
+    port_eids_to_remove = []
+    for eid, data in ports_data.items():
+        this_port_type = data["port type"]
+
+        if this_port_type not in REMOVABLE_PORT_TYPES:
+            logger.debug(f"Cannot remove port '{eid}' of type '{this_port_type}', skipping")
+        elif port_type and this_port_type != port_type:
+            logger.debug(f"Ignoring port '{eid}' of type '{this_port_type}'. Configured for type '{port_type}'")
+        else:
+            port_eids_to_remove.append(eid)
+
+    # TODO: Create and call remove port function
+    breakpoint()
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         prog='lf_cleanup.py',
@@ -755,6 +951,15 @@ def main():
     if args.debug:
         logger_config.set_level("debug")
 
+    # TODO: Configurable manager port
+    logger.info(f"Initiating LANforge API session with LANforge {args.mgr}:8080")
+    session = LFSession(lfclient_url=f"http://{args.mgr}:8080")
+
+    # DEBUG
+    remove_ports(session)
+    exit(1)
+    # DEBUG
+
     clean = lf_clean(host=args.mgr,
                      resource=args.resource,
                      clean_cxs=args.cxs,
@@ -764,12 +969,7 @@ def main():
                      clean_misc=args.misc)
     logger.debug("cleaning cxs: {cxs} endpoints: {endp} stations: {sta} start".format(cxs=args.cxs, endp=args.l3_endp, sta=args.sta))
 
-    response = clean.get_json1()
-    logger.debug(response)
-    logger.debug("The objects that are present in the port Manager")
-    for i in range(len(response["interfaces"])):
-        response2 = list(response["interfaces"][i].keys())
-        logger.debug(response2)
+    # TODO: Add debugging code to print objects to delete (ports, L3 CXs, L4 endps, etc)
 
     if args.cxs:
         logger.info("Deleting Layer-3 CXs")
