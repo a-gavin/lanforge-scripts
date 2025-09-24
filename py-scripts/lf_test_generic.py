@@ -192,20 +192,20 @@ class GenTest():
             self.csv_results_writer = csv.writer(self.csv_results_file, delimiter=",")
 
         number_template = "000"
-        if (int(self.num_stations) > 0):
+        if int(self.num_stations) > 0:
             self.sta_list = self.port_name_series(prefix="sta",
                                                   start_id=int(number_template),
                                                   end_id=int(self.num_stations) + int(number_template) - 1,
                                                   padding_number=10000,
                                                   radio=self.radio)
-        if (use_existing_eid):
+        if use_existing_eid:
             # split list from user to create functional list used in script.
             self.use_existing_eid = use_existing_eid.split(",")
         else:
             self.use_existing_eid = use_existing_eid
 
         # evaluate if iperf3-server on lanforge
-        if (self.target):
+        if self.target:
             if re.match('\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}', self.target) is None:
                 # not an ip address
                 self.iperf3_target_lanforge = True
@@ -281,7 +281,7 @@ class GenTest():
 
         # append fetched data to row, to add to csv file
         row = []
-        if (json_response is not None):
+        if json_response is not None:
             json_re_intf = json_response['interface']
             for field in self.port_mgr_cols:
                 row.append(json_re_intf[field])
@@ -307,7 +307,7 @@ class GenTest():
 
         # append fetched data to row, to add to csv file
         row = []
-        if (json_response is not None):
+        if json_response is not None:
             json_re_intf = json_response['endpoint']
             for field in self.gen_tab_cols:
                 row.append(json_re_intf[field])
@@ -334,9 +334,9 @@ class GenTest():
         report.build_banner()
 
         total_devices = 0
-        if (self.sta_list):
+        if self.sta_list:
             total_devices += len(self.sta_list)
-        if (self.use_existing_eid):
+        if self.use_existing_eid:
             total_devices += len(self.use_existing_eid)
 
         # test setup info
@@ -422,16 +422,16 @@ class GenTest():
         monitor_interval = self.duration_time_to_seconds(self.monitor_interval)
         end_time = datetime.datetime.now().timestamp() + self.duration_time_to_seconds(self.test_duration)
 
-        while (datetime.datetime.now().timestamp() < end_time):
+        while datetime.datetime.now().timestamp() < end_time:
             # write to all csv files
-            if (self.create_report):
-                if (self.sta_list and self.port_mgr_cols):
+            if self.create_report:
+                if self.sta_list and self.port_mgr_cols:
                     for sta_alias in self.sta_list:
                         self.write_port_csv(sta_alias)
-                if (self.use_existing_eid and self.port_mgr_cols):
+                if self.use_existing_eid and self.port_mgr_cols:
                     for eid in self.use_existing_eid:
                         self.write_port_csv(eid)
-                if (self.created_endp and self.gen_tab_cols):
+                if self.created_endp and self.gen_tab_cols:
                     for endp in self.created_endp:
                         self.write_gen_csv(endp)
             time.sleep(monitor_interval)
@@ -444,7 +444,7 @@ class GenTest():
             for sta_alias in self.sta_list:
                 port_shelf, port_resource, port_name, *nil = self.name_to_eid(sta_alias)
                 # write headers to csv
-                if (self.create_report):
+                if self.create_report:
                     self.csv_add_port_column_headers(sta_alias)
                 self.command.post_set_port(shelf=port_shelf,
                                            resource=port_resource,
@@ -458,7 +458,7 @@ class GenTest():
             for eid in self.use_existing_eid:
                 port_shelf, port_resource, port_name, *nil = self.name_to_eid(eid)
                 # write headers to csv
-                if (self.create_report):
+                if self.create_report:
                     self.csv_add_port_column_headers(eid)
                 self.command.post_set_port(shelf=port_shelf,
                                            resource=port_resource,
@@ -469,7 +469,7 @@ class GenTest():
                                            report_timer=self.report_timer)
 
         # Check if created stations admin-up and have ips
-        if (self.sta_list):
+        if self.sta_list:
             if self.wait_for_action("port", self.sta_list, "up", 3000):
                 print("All created stations went admin up.")
             else:
@@ -481,7 +481,7 @@ class GenTest():
                 self.print("Stations failed to get IPs")
 
         # Check if existing ports admin-up and got ips
-        if (self.use_existing_eid):
+        if self.use_existing_eid:
             if self.wait_for_action("port", self.use_existing_eid, "up", 3000):
                 print("All exiting ports went admin up.")
             else:
@@ -596,7 +596,7 @@ class GenTest():
 
             else:
                 raise ValueError("security type given: %s : is invalid. Please set security type as wep, wpa, wpa2, wpa3, or open." % self.security)
-        if (self.test_type == 'iperf3'):
+        if self.test_type == 'iperf3':
             # admin up server port, we need IP for client generic endp creation.
             # This code is only executed if we are NOT given a target ip address. (e.g. given 1.1.eth2 instead of 192.168.101.3)
             if (self.iperf3_target_lanforge):
@@ -693,11 +693,11 @@ class GenTest():
         eid_shelf = eid_list[0]
         eid_resource = eid_list[1]
         eid_name = eid_list[2]
-        if (self.cmd):
+        if self.cmd:
             cmd = self.cmd
-        elif (type == 'iperf3'):
-            if (self.iperf3_target_lanforge):
-                if (eid_list == self.name_to_eid(self.target)):
+        elif type == 'iperf3':
+            if self.iperf3_target_lanforge:
+                if eid_list == self.name_to_eid(self.target):
                     unique_alias = "server-" + unique_alias
                     cmd = self.do_iperf('server', unique_alias, eid_list)
                 else:
@@ -708,9 +708,9 @@ class GenTest():
                 unique_alias = "client-" + unique_alias
                 cmd = self.do_iperf('client', unique_alias, eid_list)
 
-        elif (type == 'ping'):
+        elif type == 'ping':
             standard_ping = True
-            if (interop_device):
+            if interop_device:
                 standard_ping = False
                 os_type = interop_device
                 # construct ping command based on interop device type
@@ -724,39 +724,39 @@ class GenTest():
                     # Android
                     cmd = "ping -i %s %s" % (self.interval, self.target)
 
-            if (standard_ping):
+            if standard_ping:
                 # lfping  -s 128 -i 0.1 -c 10000 -I sta0000 www.google.com
                 cmd = "lfping"
-                if (self.interval):
+                if self.interval:
                     cmd = cmd + " -i %d" % self.interval
-                if (self.loop_count):
+                if self.loop_count:
                     cmd = cmd + " -c %d" % self.loop_count
                 cmd = cmd + " -I %s " % eid_name
-                if (self.target):
+                if self.target:
                     cmd = cmd + str(self.target)
 
-        elif (type == 'iperf3-client'):
+        elif type == 'iperf3-client':
             #  iperf3 --forceflush --format k --precision 4 -c 192.168.10.1 -t 60 --tos 0 -b 1K --bind_dev sta0000
             # -i 5 --pidfile /tmp/lf_helper_iperf3_testing.pid -p 101
             cmd = self.do_iperf('client', unique_alias, eid_list)
 
-        elif (self.test_type == 'iperf3-server'):
+        elif self.test_type == 'iperf3-server':
             # iperf3 --forceflush --format k --precision 4 -s --bind_dev sta0000
             # -i 5 --pidfile /tmp/lf_helper_iperf3_testing.pid -p 101
             cmd = self.do_iperf('server', unique_alias, eid_list)
 
-        elif (self.test_type == 'lfcurl'):
+        elif self.test_type == 'lfcurl':
             # ./scripts/lf_curl.sh  -p sta0000 -i 192.168.50.167 -o /dev/null -n 1 -d 8.8.8.8
             cmd = cmd + str("./scripts/lf_curl.sh -p %s" % eid_name)
             # TODO: get ip address of -i (sta0000) if i is a station, but not if eth port.
-            if (self.file_output_lfcurl):
+            if self.file_output_lfcurl:
                 cmd = cmd + " -o %s" % self.file_output_lfcurl
-            if (self.loop_count):
+            if self.loop_count:
                 cmd = cmd + " -n %i" % self.loop_count
-            if (self.destination_url_lfcurl):
+            if self.destination_url_lfcurl:
                 cmd = cmd + " -d %s" % self.destination_url_lfcurl
-        elif (self.test_type == 'speedtest'):
-            if (self.spdtest_ookla):
+        elif self.test_type == 'speedtest':
+            if self.spdtest_ookla:
                 cmd = "speedtest --interface=%s --format=csv" % eid_name
             else:
                 # do lanforge speedtest
@@ -764,15 +764,15 @@ class GenTest():
                 # vrf_exec.bash eth3 speedtest-cli --csv --no-upload
                 # vrf_exec.bash eth3 speedtest-cli --csv
                 cmd = cmd + "vrf_exec.bash %s speedtest-cli --csv" % eid_name  # bas command
-                if (self.spdtest_enable_report):
+                if self.spdtest_enable_report:
                     cmd = cmd + " --share"
-                if (self.spdtest_no_download):
+                if self.spdtest_no_download:
                     cmd = cmd + " --no_download"
-                if (self.spdtest_no_upload):
+                if self.spdtest_no_upload:
                     cmd = cmd + " --no_upload"
-                if (self.spdtest_single_connection):
+                if self.spdtest_single_connection:
                     cmd = cmd + " --single"
-                if (self.spdtest_enable_debug):
+                if self.spdtest_enable_debug:
                     cmd = cmd + " --debug"
         else:
             raise ValueError("Was not able to identify type given in arguments.")
@@ -798,7 +798,7 @@ class GenTest():
                                       command=cmd)
 
         # add headers to endp file if user asks to create report
-        if (self.create_report):
+        if self.create_report:
             self.csv_add_gen_column_headers(unique_alias)
 
     def do_iperf(self, type, alias, eid_list):
@@ -815,21 +815,21 @@ class GenTest():
         # eid_shelf = eid_list[0]
         # eid_resource = eid_list[1]
         eid_name = eid_list[2]
-        if (type == 'client'):
-            if (self.iperf3_target_lanforge):
+        if type == 'client':
+            if self.iperf3_target_lanforge:
                 server_ip_addr = self.eid_to_ip(self.name_to_eid(self.target))
             else:
                 server_ip_addr = self.target
             cmd = cmd + str(" -c %s" % server_ip_addr) + " -t 60 --tos 0 -b 1K " + str("--bind_dev %s" % eid_name)
             cmd = cmd + " -i 3 --pidfile /tmp/lf_helper_iperf3_%s.pid" % alias
-            if (self.client_port):
+            if self.client_port:
                 # add port that should match server_port
                 cmd = cmd + " -p %s" % self.client_port
         # server
         else:
             # iperf3 --forceflush --format k --precision 4 -s --bind_dev eth2 -i 5 --pidfile /tmp/lf_helper_iperf3_server_iperf_1.pid eth2
             cmd = cmd + " -s" + str(" --bind_dev %s" % eid_name) + " -i 3 --pidfile /tmp/lf_helper_iperf3_%s.pid" % alias
-            if (self.server_port):
+            if self.server_port:
                 # add port that should match client port
                 cmd = cmd + " -p %s" % self.server_port
         return cmd
@@ -991,17 +991,17 @@ class GenTest():
         # TODO validate all args, depending on which test is used.
         # TODO: in args, check if file_out_lfcurl and destination_url_lfcurl is None. then state that defaults are being used and apply defaults
         # Station creation specific
-        if (self.sta_list) and self.security != "open":
-            if (self.passwd is None) or (self.passwd == ""):
+        if self.sta_list and self.security != "open":
+            if self.passwd is None or self.passwd == "":
                 raise ValueError("use_security: %s requires passphrase or [BLANK]" % self.security)
         # Generic endp specific
-        if ((self.test_type == "iperf3" or self.test_type == "iperf3-client") and self.target is None):
+        if (self.test_type == "iperf3" or self.test_type == "iperf3-client") and self.target is None:
             raise ValueError("To execute test type 'iperf3' or 'iperf3-client', a target must be specified as an IP address or port eid.")
 
     # This takes in a eid string (e.g. '1.1.sta000') and returns an eid list in list order of [shelf, resource, port name]
     def name_to_eid(self, eid_input, non_port=False):
         rv = [1, 1, "", ""]
-        if (eid_input is None) or (eid_input == ""):
+        if eid_input is None or eid_input == "":
             logger.critical("name_to_eid wants eid like 1.1.sta0 but given[%s]" % eid_input)
             raise ValueError("name_to_eid wants eid like 1.1.sta0 but given[%s]" % eid_input)
         if type(eid_input) is not str:
@@ -1015,22 +1015,22 @@ class GenTest():
             rv[2] = info[0]  # just port name
             return rv
 
-        if (len(info) == 2) and info[0].isnumeric() and not info[1].isnumeric():  # resource.port-name
+        if len(info) == 2 and info[0].isnumeric() and not info[1].isnumeric():  # resource.port-name
             rv[1] = int(info[0])
             rv[2] = info[1]
             return rv
 
-        elif (len(info) == 2) and not info[0].isnumeric():  # port-name.qvlan
+        elif len(info) == 2 and not info[0].isnumeric():  # port-name.qvlan
             rv[2] = info[0] + "." + info[1]
             return rv
 
-        if (len(info) == 3) and info[0].isnumeric() and info[1].isnumeric():  # shelf.resource.port-name
+        if len(info) == 3 and info[0].isnumeric() and info[1].isnumeric():  # shelf.resource.port-name
             rv[0] = int(info[0])
             rv[1] = int(info[1])
             rv[2] = info[2]
             return rv
 
-        elif (len(info) == 3) and info[0].isnumeric() and not info[1].isnumeric():  # resource.port-name.qvlan
+        elif len(info) == 3 and info[0].isnumeric() and not info[1].isnumeric():  # resource.port-name.qvlan
             rv[1] = int(info[0])
             rv[2] = info[1] + "." + info[2]
             return rv
@@ -1260,7 +1260,7 @@ def main():
     optional.add_argument('--help_summary', action="store_true", help='Show summary of what this script does')
 
     # check if the arguments are empty?
-    if (len(sys.argv) <= 2 and not sys.argv[1]):
+    if len(sys.argv) <= 2 and not sys.argv[1]:
         print("This python file needs the minimum required args. See add the --help flag to check out all possible arguments.")
         sys.exit(1)
 
