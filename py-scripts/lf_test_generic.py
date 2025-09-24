@@ -65,10 +65,6 @@ import re
 import csv
 import pandas as pd
 
-# from pandas import json_normalize
-# from lf_json_util import standardize_json_results
-
-
 sys.path.append(os.path.join(os.path.abspath(__file__ + "../../../")))
 lanforge_api = importlib.import_module("lanforge_client.lanforge_api")
 from lanforge_client.lanforge_api import LFSession  # noqa: E402
@@ -82,8 +78,6 @@ lf_report = importlib.import_module("py-scripts.lf_report")
 lf_graph = importlib.import_module("py-scripts.lf_graph")
 lf_kpi_csv = importlib.import_module("py-scripts.lf_kpi_csv")
 
-# from lf_graph import lf_bar_graph_horizontal
-# from lf_graph import lf_bar_graph  # noqa: E402
 from lf_report import lf_report  # noqa: E402
 
 lf_bar_graph = lf_graph.lf_bar_graph
